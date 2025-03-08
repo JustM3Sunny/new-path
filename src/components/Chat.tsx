@@ -42,7 +42,8 @@ export default function Chat({ messages, onSendMessage, loading = false }: ChatP
     };
 
     return (
-        <div className="flex flex-col h-[40rem] w-full max-w-4xl bg-white rounded-lg shadow-lg">
+        <div className="flex flex-col w-full h-screen pt-16 bg-white shadow-lg overflow-hidden">
+            {/* Chat Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.map((message) => (
                     <div
@@ -95,6 +96,8 @@ export default function Chat({ messages, onSendMessage, loading = false }: ChatP
                         </div>
                     </div>
                 ))}
+
+                {/* AI Loading Indicator */}
                 {loading && (
                     <div className="flex justify-start">
                         <div className="bg-gray-100 text-gray-800 p-3 rounded-lg animate-pulse flex space-x-2">
@@ -104,15 +107,19 @@ export default function Chat({ messages, onSendMessage, loading = false }: ChatP
                         </div>
                     </div>
                 )}
+
+                {/* Code Playground for User Input */}
                 {showCodeEditor && !loading && (
                     <div className="mt-4">
                         <CodePlayground onRun={handleCodeRun} />
                     </div>
                 )}
+
                 <div ref={messagesEndRef} />
             </div>
 
-            <form onSubmit={handleSubmit} className="p-4 border-t">
+            {/* Input Field */}
+            <form onSubmit={handleSubmit} className="p-4 border-t bg-white">
                 <div className="flex gap-2">
                     <button
                         type="button"
