@@ -21,46 +21,39 @@ export default function CodePlayground({ initialCode = '', onRun }: CodePlaygrou
   const runCode = async () => {
     setIsRunning(true);
     setOutput('');
-    
+
     try {
-      // Create a safe console.log replacement
       let outputBuffer = '';
-      const safeConsole = {
-        log: (...args: any[]) => {
-          outputBuffer += args.map(arg => 
-            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-          ).join(' ') + '\n';
-        },
-        error: (...args: any[]) => {
-          outputBuffer += '🔴 Error: ' + args.map(arg => 
-            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-          ).join(' ') + '\n';
-        },
-        warn: (...args: any[]) => {
-          outputBuffer += '⚠️ Warning: ' + args.map(arg => 
-            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-          ).join(' ') + '\n';
-        }
+      const captureConsole = (type: 'log' | 'error' | 'warn') => (...args: any[]) => {
+        outputBuffer += `${type.toUpperCase()}: ` + args.map(arg =>
+          typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+        ).join(' ') + '\n';
       };
 
-      // Create a safe evaluation context
-      const evalContext = `
-        "use strict";
-        const console = {
-          log: ${safeConsole.log.toString()},
-          error: ${safeConsole.error.toString()},
-          warn: ${safeConsole.warn.toString()}
-        };
-        ${code}
+      const safeConsole = {
+        log: captureConsole('log'),
+        error: captureConsole('error'),
+        warn: captureConsole('warn'),
+      };
+
+      const codeWrapper = `
+        (function(){
+          "use strict";
+          const console = ${JSON.stringify(safeConsole)};
+          try {
+            ${code}
+          } catch (error) {
+            console.error(error.message);
+          }
+        })();
       `;
 
-      // Execute the code in a new Function context
-      new Function(evalContext)();
-      
-      setOutput(outputBuffer || 'Code executed successfully (no output)');
+      new Function(codeWrapper)();
+
+      setOutput(outputBuffer || '✅ Code executed successfully (no output)');
       onRun?.(code, outputBuffer);
     } catch (error) {
-      setOutput(`Error: ${error instanceof Error ? error.message : String(error)}`);
+      setOutput(`🔴 Error: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setIsRunning(false);
     }
