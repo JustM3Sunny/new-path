@@ -35,12 +35,14 @@ export default function Chat({ messages, onSendMessage, loading = false }: ChatP
     };
 
     const handleCodeRun = (code: string, output: string) => {
-        onSendMessage(`Here's my code solution:\n\`\`\`javascript\n${code}\n\`\`\`\nOutput:\n\`\`\`\n${output}\n\`\`\``, output);
-        setShowCodeEditor(false);
+        if (code.trim()) {
+            onSendMessage(`Here's my code solution:\n\`\`\`javascript\n${code}\n\`\`\`\nOutput:\n\`\`\`\n${output}\n\`\`\``, output);
+            setShowCodeEditor(false);
+        }
     };
 
     return (
-        <div className="flex flex-col h-[30rem] bg-white rounded-lg shadow-lg">
+        <div className="flex flex-col h-[40rem] w-full max-w-4xl bg-white rounded-lg shadow-lg">
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.map((message) => (
                     <div
@@ -48,8 +50,7 @@ export default function Chat({ messages, onSendMessage, loading = false }: ChatP
                         className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                         <div
-                            className={`max-w-[90%] p-3 rounded-lg ${message.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800'
-                                }`}
+                            className={`max-w-[90%] p-3 rounded-lg ${message.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800'}`}
                         >
                             <div className="flex items-center gap-2 mb-1">
                                 <MessageSquare size={16} />
@@ -60,7 +61,7 @@ export default function Chat({ messages, onSendMessage, loading = false }: ChatP
                             <div className="prose prose-sm max-w-none">
                                 <ReactMarkdown
                                     components={{
-                                        code({ node, inline, className, children, ...props }) {
+                                        code({ inline, className, children, ...props }) {
                                             const match = /language-(\w+)/.exec(className || '');
                                             return !inline && match ? (
                                                 <SyntaxHighlighter
@@ -83,7 +84,7 @@ export default function Chat({ messages, onSendMessage, loading = false }: ChatP
                                 </ReactMarkdown>
                             </div>
 
-                            {message.codeChallenge && (
+                            {message.codeChallenge && message.codeChallenge.initialCode && (
                                 <div className="mt-4">
                                     <CodePlayground
                                         initialCode={message.codeChallenge.initialCode}
@@ -96,14 +97,10 @@ export default function Chat({ messages, onSendMessage, loading = false }: ChatP
                 ))}
                 {loading && (
                     <div className="flex justify-start">
-                        <div className="bg-gray-100 text-gray-800 p-3 rounded-lg">
-                            <div className="flex items-center gap-2">
-                                <div className="animate-pulse flex space-x-2">
-                                    <div className="h-2 w-2 bg-gray-400 rounded-full"></div>
-                                    <div className="h-2 w-2 bg-gray-400 rounded-full"></div>
-                                    <div className="h-2 w-2 bg-gray-400 rounded-full"></div>
-                                </div>
-                            </div>
+                        <div className="bg-gray-100 text-gray-800 p-3 rounded-lg animate-pulse flex space-x-2">
+                            <div className="h-2 w-2 bg-gray-400 rounded-full"></div>
+                            <div className="h-2 w-2 bg-gray-400 rounded-full"></div>
+                            <div className="h-2 w-2 bg-gray-400 rounded-full"></div>
                         </div>
                     </div>
                 )}
